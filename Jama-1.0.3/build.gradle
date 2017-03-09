@@ -1,0 +1,4 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('Jama-1.0.3.jar'))
+dependencies {
+}

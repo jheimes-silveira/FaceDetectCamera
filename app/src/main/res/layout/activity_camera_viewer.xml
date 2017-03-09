@@ -19,5 +19,19 @@
         android:layout_alignParentRight="true"
         android:layout_margin="10dp"
         android:scrollbars="vertical" />
-
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="save"
+        android:id="@+id/btn_salvar_imgs"
+        android:layout_alignBottom="@+id/recycler_view"
+        android:layout_toLeftOf="@+id/recycler_view"
+        android:layout_toStartOf="@+id/recycler_view" />
+    <TextView
+        android:id="@+id/tv_nome"
+        android:layout_alignBottom="@+id/recycler_view"
+        android:layout_margin="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="nome"/>
 </RelativeLayout>

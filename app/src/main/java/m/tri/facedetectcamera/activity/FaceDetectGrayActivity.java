@@ -22,6 +22,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public final class FaceDetectGrayActivity extends AppCompatActivity implements S
     private RecyclerView recyclerView;
     private ImagePreviewAdapter imagePreviewAdapter;
     private ArrayList<Bitmap> facesBitmap;
-
+    private Button btnSalvarImgs;
 
     //==============================================================================================
     // Activity Methods
@@ -121,6 +122,7 @@ public final class FaceDetectGrayActivity extends AppCompatActivity implements S
         // Create and Start the OrientationListener:
 
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        btnSalvarImgs = (Button) findViewById(R.id.btn_salvar_imgs);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -201,6 +203,37 @@ public final class FaceDetectGrayActivity extends AppCompatActivity implements S
 
         Log.i(TAG, "onResume");
         startPreview();
+        onSaveImgs();
+    }
+
+    private void onSaveImgs() {
+        btnSalvarImgs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (int i = 0 ; i < imagePreviewAdapter.getItemCount() ; i++) {
+                    Bitmap img = imagePreviewAdapter.getItem(i);
+                }
+
+
+                final int childcount = imagePreviewAdapter.getItemCount();
+                if (childcount <= 0) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(FaceDetectGrayActivity.this);
+                    builder.setMessage(childcount + " Erro ao salvar")
+                            .show();
+                } else {
+                    String path = "face_recognition/";
+                    path = path + "jheimes"; // captura o nome da coleção por um modal
+                    Util.cleanDirectory(path);
+                    for (int i = 0; i < childcount; i++) {
+                        Bitmap bitmap = imagePreviewAdapter.getItem(i);
+                        Util.saveImageStorage(bitmap, path);
+                    }
+                    AlertDialog.Builder builder = new AlertDialog.Builder(FaceDetectGrayActivity.this);
+                    builder.setMessage(childcount + " foto(s) salva com sucesso.")
+                            .show();
+                }
+            }
+        });
     }
 
     /**

@@ -1,16 +1,23 @@
 package m.tri.facedetectcamera.utils;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Display;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -134,5 +141,76 @@ public class Util {
             size.set(d.getWidth(), d.getHeight());
         }
         return size;
+    }
+
+    public static String pathRootApp() {
+        return Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Constants.PATH_APP;
+    }
+    public static void saveImageStorage(Bitmap finalBitmap, String pathDirectory) {
+        pathDirectory = pathDirectory.replace(" ", "_");
+        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+        pathDirectory = root + "/" + pathDirectory;
+        File myDir = createDirectory(pathDirectory);
+
+        String fname = String.valueOf("image" + new Date().getTime()) +".jpg";
+        File file = new File (myDir, fname);
+        if (file.exists ()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public static String saveImageStorage(Bitmap finalBitmap, String pathDirectory, String name) {
+        pathDirectory = pathDirectory.replace(" ", "_");
+        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+        pathDirectory = root + "/" + pathDirectory;
+        File myDir = createDirectory(pathDirectory);
+
+        String fname = name +".jpg";
+        File file = new File (myDir, fname);
+        if (file.exists ()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file.getAbsolutePath();
+    }
+    public static File createDirectory(String path) {
+        File myDir = new File(path);
+        try {
+            if (!myDir.exists()) {
+                myDir.mkdirs();
+            }
+        } catch (Exception e) {
+            Log.i("Erro", e.getMessage());
+        }
+        return myDir;
+    }
+
+    public static void cleanDirectory(String path) {
+        path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + path.replace(" ", "_");
+        File dir = new File(path);
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                new File(dir, children[i]).delete();
+            }
+        }
+    }
+
+    public static void showAlert(Context context, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(message)
+                .show();
     }
 }

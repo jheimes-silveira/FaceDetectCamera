@@ -74,6 +74,12 @@ public class ImagePreviewAdapter extends
         return position;
     }
 
+    public Bitmap getItem(int position) {
+        if (position > bitmaps.size() - 1) {
+            return null;
+        }
+        return bitmaps.get(position);
+    }
 
     public void add(Bitmap bitmap) {
         insert(bitmap, bitmaps.size());

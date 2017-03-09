@@ -25,9 +25,12 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +42,7 @@ import m.tri.facedetectcamera.model.FaceResult;
 import m.tri.facedetectcamera.utils.CameraErrorCallback;
 import m.tri.facedetectcamera.utils.ImageUtils;
 import m.tri.facedetectcamera.utils.Util;
+import m.tri.facedetectcamera.utils.eigenface.EigenFaceCreator;
 
 
 /**
@@ -85,11 +89,11 @@ public final class FaceDetectRGBActivity extends AppCompatActivity implements Su
     private int prevSettingWidth;
     private int prevSettingHeight;
     private android.media.FaceDetector fdet;
-
+    private Button btnSaveImgs;
     private FaceResult faces[];
     private FaceResult faces_previous[];
     private int Id = 0;
-
+    private TextView tvNome;
     private String BUNDLE_CAMERA_ID = "camera";
 
 
@@ -120,8 +124,9 @@ public final class FaceDetectRGBActivity extends AppCompatActivity implements Su
         mFaceView = new FaceOverlayView(this);
         addContentView(mFaceView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         // Create and Start the OrientationListener:
-
+        btnSaveImgs = (Button) findViewById(R.id.btn_salvar_imgs);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        tvNome = (TextView) findViewById(R.id.tv_nome);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -193,14 +198,42 @@ public final class FaceDetectRGBActivity extends AppCompatActivity implements Su
                 return super.onOptionsItemSelected(item);
         }
     }
+    private void onSaveImgs() {
+        btnSaveImgs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (int i = 0 ; i < imagePreviewAdapter.getItemCount() ; i++) {
+                    Bitmap img = imagePreviewAdapter.getItem(i);
+                }
 
+
+                final int childcount = imagePreviewAdapter.getItemCount();
+                if (childcount <= 0) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(FaceDetectRGBActivity.this);
+                    builder.setMessage(childcount + " Erro ao salvar")
+                            .show();
+                } else {
+                    String path = "face_recognition/";
+                    path = path + "jheimes"; // captura o nome da coleção por um modal
+                    Util.cleanDirectory(path);
+                    for (int i = 0; i < childcount; i++) {
+                        Bitmap bitmap = imagePreviewAdapter.getItem(i);
+                        Util.saveImageStorage(bitmap, path);
+                    }
+                    AlertDialog.Builder builder = new AlertDialog.Builder(FaceDetectRGBActivity.this);
+                    builder.setMessage(childcount + " foto(s) salva com sucesso.")
+                            .show();
+                }
+            }
+        });
+    }
     /**
      * Restarts the camera.
      */
     @Override
     protected void onResume() {
         super.onResume();
-
+        onSaveImgs();
         Log.i(TAG, "onResume");
         startPreview();
     }
@@ -559,6 +592,7 @@ public final class FaceDetectRGBActivity extends AppCompatActivity implements Su
                                     handler.post(new Runnable() {
                                         public void run() {
                                             imagePreviewAdapter.add(faceCroped);
+                                            compareImageComBanco(faceCroped);
                                         }
                                     });
                                 }
@@ -608,5 +642,34 @@ public final class FaceDetectRGBActivity extends AppCompatActivity implements Su
         } else {
             imagePreviewAdapter.clearAll();
         }
+    }
+
+    private void compareImageComBanco(Bitmap bitmap) {
+
+        String pathImg = Util.saveImageStorage(bitmap, "recognition", "ultima_img_reconhecida");
+        File dir = new File(Util.pathRootApp());
+        File[] filelist = dir.listFiles();
+        EigenFaceCreator creator = new EigenFaceCreator();
+        String result = null;
+        for (int i = 0; i < filelist.length; i++) {
+            try {
+
+                //creator.USE_CACHE = -1;
+                Log.i("Log ", "Constructing face-spaces from "+filelist[i].getName()+" ...");
+                creator.readFaceBundles(filelist[i].getAbsolutePath());
+
+                Log.i("Log ", "Comparing "+pathImg+" ...");
+                result = creator.checkAgainst(pathImg);
+
+                if (result != null) {
+                    result = filelist[i].getName();
+                    break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+        tvNome.setText(result != null ? result : "nome");
     }
 }
